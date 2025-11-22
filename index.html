@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLRB 2-3 Tree Visualizer</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Left-Leaning Red-Black Tree Visualizer</h1>
+            <p>A visual guide to understanding LLRB 2-3 tree operations</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Left Panel: Tree Visualization -->
+            <div class="panel tree-panel">
+                <div class="tree-header">
+                    <h2>Tree Visualization</h2>
+                    <button id="reset-view-btn" class="reset-view-btn">Reset View</button>
+                </div>
+                <svg id="tree-svg"></svg>
+            </div>
+
+            <!-- Right Panel: Pseudocode -->
+            <div class="panel pseudocode-panel">
+                <div class="pseudocode-header">
+                    <h2>Algorithm Execution</h2>
+                    <div class="step-controls">
+                        <div class="step-buttons">
+                            <button id="step-start-btn" class="step-btn" disabled>⏮ Start</button>
+                            <button id="step-back-btn" class="step-btn" disabled>← Back</button>
+                            <button id="play-pause-btn" class="step-btn" disabled>▶ Play</button>
+                            <button id="step-forward-btn" class="step-btn" disabled>Forward →</button>
+                            <button id="step-end-btn" class="step-btn" disabled>⏭ End</button>
+                        </div>
+                        <div class="step-scrubber">
+                            <input type="range" id="step-slider" min="1" max="1" value="1" disabled />
+                            <div class="step-meta">
+                                <span id="step-label">Step 0 / 0</span>
+                                <span class="shortcut-hint">Space: Play/Pause • ←/→: Step</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="step-summary" class="step-summary info-text">Run an operation to see each step.</div>
+                <div id="pseudocode-display">
+                    <p class="info-text">Perform an operation to see the algorithm execution</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <div class="control-group">
+                <h3>Operations</h3>
+                <div class="operation-controls">
+                    <input type="number" id="value-input" placeholder="Enter value" />
+                    <button id="insert-btn">Insert</button>
+                    <button id="delete-btn">Delete</button>
+                    <button id="delete-min-btn">Delete Min</button>
+                    <button id="clear-btn">Clear Tree</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Tree Statistics</h3>
+                <div id="tree-stats">
+                    <span>Nodes: <strong id="node-count">0</strong></span>
+                    <span>Height: <strong id="tree-height">0</strong></span>
+                    <span id="operation-status"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- About Section -->
+        <footer class="about-section">
+            <p>
+                Based on Robert Sedgewick's Left-Leaning Red-Black Trees.
+                See <a href="https://algs4.cs.princeton.edu/33balanced/" target="_blank">Algorithms, 4th Edition</a>
+                and <a href="https://sedgewick.io/wp-content/themes/sedgewick/papers/2008LLRB.pdf" target="_blank">Sedgewick's LLRB paper (2008)</a>
+                for more details.
+            </p>
+        </footer>
+    </div>
+
+    <script src="js/algorithms.js"></script>
+    <script src="js/llrb.js"></script>
+    <script src="js/visualizer.js"></script>
+    <script src="js/pseudocode.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
