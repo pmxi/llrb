@@ -26,13 +26,17 @@ class ExecutionTracer {
         this.callStack.pop();
     }
 
-    addStep(funcName, lineNumber, variables, treeState) {
+    addStep(funcName, lineNumber, variables, treeState, floatingNodes = []) {
         this.steps.push({
             funcName,
             lineNumber,
             callStack: [...this.callStack],
             variables: { ...variables },
-            treeState: JSON.parse(JSON.stringify(treeState))
+            treeState: JSON.parse(JSON.stringify(treeState)),
+            floatingNodes: floatingNodes.map((node) => ({
+                label: node.label,
+                tree: JSON.parse(JSON.stringify(node.tree))
+            }))
         });
     }
 
@@ -84,16 +88,15 @@ class LLRBTree {
 
         // Line 4-6: comparison and recursive calls
         this.tracer.addStep(funcName, 4, { h: h.value, key }, this.serializeTree());
-        const cmp = key - h.value;
 
-        if (cmp < 0) {
-            this.tracer.addStep(funcName, 5, { h: h.value, key, cmp: '<' }, this.serializeTree());
+        if (key < h.value) {
+            this.tracer.addStep(funcName, 5, { h: h.value, key }, this.serializeTree());
             h.left = this.insertRecursive(h.left, key);
-        } else if (cmp > 0) {
-            this.tracer.addStep(funcName, 6, { h: h.value, key, cmp: '>' }, this.serializeTree());
+        } else if (key > h.value) {
+            this.tracer.addStep(funcName, 6, { h: h.value, key }, this.serializeTree());
             h.right = this.insertRecursive(h.right, key);
         } else {
-            this.tracer.addStep(funcName, 7, { h: h.value, key, cmp: '=' }, this.serializeTree());
+            this.tracer.addStep(funcName, 7, { h: h.value, key }, this.serializeTree());
         }
 
         // Line 9: if (isRed(h.right) && !isRed(h.left)) h = rotateLeft(h);
@@ -214,12 +217,10 @@ class LLRBTree {
 
         this.tracer.addStep(funcName, 0, { h: h.value, key }, this.serializeTree());
 
-        const cmp = key - h.value;
+        // Line 2: if (key < h.key)
+        this.tracer.addStep(funcName, 2, { h: h.value, key }, this.serializeTree());
 
-        // Line 2: if (key.compareTo(h.key) < 0)
-        this.tracer.addStep(funcName, 2, { h: h.value, key, cmp }, this.serializeTree());
-
-        if (cmp < 0) {
+        if (key < h.value) {
             // Line 4-6
             this.tracer.addStep(funcName, 4, { h: h.value }, this.serializeTree());
             if (!this.isRed(h.left) && h.left && !this.isRed(h.left.left)) {
@@ -236,9 +237,9 @@ class LLRBTree {
                 h = this.rotateRight(h);
             }
 
-            // Line 12: if (key.compareTo(h.key) == 0 && h.right == null)
+            // Line 12: if (key == h.key && h.right == null)
             this.tracer.addStep(funcName, 12, { h: h.value, key }, this.serializeTree());
-            if (cmp === 0 && h.right === null) {
+            if (key === h.value && h.right === null) {
                 this.tracer.addStep(funcName, 13, { h: h.value }, this.serializeTree());
                 this.tracer.popCall();
                 return null;
@@ -251,7 +252,7 @@ class LLRBTree {
                 h = this.moveRedRight(h);
             }
 
-            // Line 16: if (key.compareTo(h.key) == 0)
+            // Line 16: if (key == h.key)
             this.tracer.addStep(funcName, 16, { h: h.value, key }, this.serializeTree());
             if (key === h.value) {
                 const minNode = this.minNode(h.right);
@@ -281,27 +282,28 @@ class LLRBTree {
         // Line 2: Node x = h.right;
         this.tracer.addStep('rotateLeft', 2, { h: h.value }, this.serializeTree());
         const x = h.right;
+        const floatingX = () => (x ? [{ label: 'x', tree: this.serializeNode(x) }] : []);
 
         // Line 3: h.right = x.left;
-        this.tracer.addStep('rotateLeft', 3, { h: h.value, x: x.value }, this.serializeTree());
+        this.tracer.addStep('rotateLeft', 3, { h: h.value, x: x.value }, this.serializeTree(), floatingX());
         h.right = x.left;
-        this.tracer.addStep('rotateLeft', 3, { h: h.value, x: x.value }, this.serializeTree());
+        this.tracer.addStep('rotateLeft', 3, { h: h.value, x: x.value }, this.serializeTree(), floatingX());
 
         // Line 4: x.left = h;
-        this.tracer.addStep('rotateLeft', 4, { h: h.value, x: x.value }, this.serializeTree());
+        this.tracer.addStep('rotateLeft', 4, { h: h.value, x: x.value }, this.serializeTree(), floatingX());
         x.left = h;
-        this.tracer.addStep('rotateLeft', 4, { h: h.value, x: x.value }, this.serializeTree());
+        this.tracer.addStep('rotateLeft', 4, { h: h.value, x: x.value }, this.serializeTree(), floatingX());
 
         // Line 5: x.color = h.color;
-        this.tracer.addStep('rotateLeft', 5, { h: h.value, x: x.value }, this.serializeTree());
+        this.tracer.addStep('rotateLeft', 5, { h: h.value, x: x.value }, this.serializeTree(), floatingX());
         x.color = h.color;
 
         // Line 6: h.color = RED;
-        this.tracer.addStep('rotateLeft', 6, { h: h.value, x: x.value }, this.serializeTree());
+        this.tracer.addStep('rotateLeft', 6, { h: h.value, x: x.value }, this.serializeTree(), floatingX());
         h.color = RED;
 
         // Line 7: return x;
-        this.tracer.addStep('rotateLeft', 7, { h: h.value, x: x.value, result: x.value }, this.serializeTree());
+        this.tracer.addStep('rotateLeft', 7, { h: h.value, x: x.value, result: x.value }, this.serializeTree(), floatingX());
         this.tracer.popCall();
         return x;
     }
@@ -313,27 +315,28 @@ class LLRBTree {
         // Line 2: Node x = h.left;
         this.tracer.addStep('rotateRight', 2, { h: h.value }, this.serializeTree());
         const x = h.left;
+        const floatingX = () => (x ? [{ label: 'x', tree: this.serializeNode(x) }] : []);
 
         // Line 3: h.left = x.right;
-        this.tracer.addStep('rotateRight', 3, { h: h.value, x: x.value }, this.serializeTree());
+        this.tracer.addStep('rotateRight', 3, { h: h.value, x: x.value }, this.serializeTree(), floatingX());
         h.left = x.right;
-        this.tracer.addStep('rotateRight', 3, { h: h.value, x: x.value }, this.serializeTree());
+        this.tracer.addStep('rotateRight', 3, { h: h.value, x: x.value }, this.serializeTree(), floatingX());
 
         // Line 4: x.right = h;
-        this.tracer.addStep('rotateRight', 4, { h: h.value, x: x.value }, this.serializeTree());
+        this.tracer.addStep('rotateRight', 4, { h: h.value, x: x.value }, this.serializeTree(), floatingX());
         x.right = h;
-        this.tracer.addStep('rotateRight', 4, { h: h.value, x: x.value }, this.serializeTree());
+        this.tracer.addStep('rotateRight', 4, { h: h.value, x: x.value }, this.serializeTree(), floatingX());
 
         // Line 5: x.color = h.color;
-        this.tracer.addStep('rotateRight', 5, { h: h.value, x: x.value }, this.serializeTree());
+        this.tracer.addStep('rotateRight', 5, { h: h.value, x: x.value }, this.serializeTree(), floatingX());
         x.color = h.color;
 
         // Line 6: h.color = RED;
-        this.tracer.addStep('rotateRight', 6, { h: h.value, x: x.value }, this.serializeTree());
+        this.tracer.addStep('rotateRight', 6, { h: h.value, x: x.value }, this.serializeTree(), floatingX());
         h.color = RED;
 
         // Line 7: return x;
-        this.tracer.addStep('rotateRight', 7, { h: h.value, x: x.value, result: x.value }, this.serializeTree());
+        this.tracer.addStep('rotateRight', 7, { h: h.value, x: x.value, result: x.value }, this.serializeTree(), floatingX());
         this.tracer.popCall();
         return x;
     }
