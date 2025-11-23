@@ -378,7 +378,9 @@ class TreeVisualizer {
 
         // Background box to make detached nodes obvious
         const boxWidth = 180;
-        const boxHeight = 110 * floatingNodes.length + 16;
+        const headerHeight = 30;
+        const itemHeight = 90;
+        const boxHeight = headerHeight + (itemHeight * floatingNodes.length) + 10;
         const boxX = this.width - boxWidth - 12;
         const boxY = 10;
 
@@ -398,14 +400,16 @@ class TreeVisualizer {
             .text('Detached during rotate');
 
         floatingNodes.forEach((item, idx) => {
-            const baseX = boxX + boxWidth / 2;
-            const baseY = boxY + 36 + idx * 110;
+            const itemY = boxY + headerHeight + (idx * itemHeight);
 
             floatingLayer.append('text')
                 .attr('class', 'floating-label')
                 .attr('x', boxX + 12)
-                .attr('y', baseY - 18)
-                .text(`${item.label} (detached)`);
+                .attr('y', itemY + 14)
+                .text(`${item.label}:`);
+
+            const baseX = boxX + boxWidth / 2;
+            const baseY = itemY + 35;
 
             const root = this.layoutTree(item.tree, baseX, baseY, 0);
             const nodes = this.collectNodes(root);
