@@ -32,10 +32,10 @@ class ExecutionTracer {
             lineNumber,
             callStack: [...this.callStack],
             variables: { ...variables },
-            treeState: JSON.parse(JSON.stringify(treeState)),
+            treeState: structuredClone(treeState),
             floatingNodes: floatingNodes.map((node) => ({
                 label: node.label,
-                tree: JSON.parse(JSON.stringify(node.tree))
+                tree: structuredClone(node.tree)
             }))
         });
     }
