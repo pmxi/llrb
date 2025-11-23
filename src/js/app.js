@@ -215,7 +215,7 @@ class LLRBApp {
     updateVisualizationAtCurrentStep() {
         const step = this.pseudocode.getCurrentStep();
         if (step && step.treeState) {
-            this.visualizer.update(step.treeState, 250, step.variables || {});
+            this.visualizer.update(step.treeState, 250, step.variables || {}, step.floatingNodes || []);
         }
     }
 
