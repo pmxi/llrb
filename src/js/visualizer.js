@@ -106,6 +106,39 @@ class TreeVisualizer {
         };
     }
 
+    // Mark all nodes reachable from a given root
+    markReachable(heap, nodeId, reachableSet) {
+        if (nodeId === null || !heap[nodeId]) return;
+        if (reachableSet.has(nodeId)) return; // Already visited
+
+        reachableSet.add(nodeId);
+        const node = heap[nodeId];
+        this.markReachable(heap, node.left, reachableSet);
+        this.markReachable(heap, node.right, reachableSet);
+    }
+
+    // Find all nodes in heap that aren't reachable from global root
+    findOrphanedNodes(heap, context) {
+        if (!heap || !context) return [];
+
+        // Find all nodes reachable from global root
+        const reachable = new Set();
+        this.markReachable(heap, context.globalRootId, reachable);
+
+        // Find all nodes in heap that aren't reachable
+        const orphaned = [];
+        for (const [nodeId, node] of Object.entries(heap)) {
+            if (!reachable.has(nodeId)) {
+                orphaned.push({
+                    id: nodeId,
+                    tree: this.buildTreeFromHeap(heap, nodeId)
+                });
+            }
+        }
+
+        return orphaned;
+    }
+
     // Custom layout that respects left/right positioning
     layoutTree(data, x = this.width / 2, y = 0, level = 0) {
         if (!data) return null;
@@ -233,6 +266,9 @@ class TreeVisualizer {
 
         // Add variable pointers
         this.addVariablePointers(labelsGroup, nodes, variables);
+
+        // Render orphaned nodes (nodes in heap but not reachable from root)
+        this.renderOrphanedNodes(heap, context);
 
         // Update reset button visibility
         this.updateResetButtonVisibility();
@@ -376,7 +412,101 @@ class TreeVisualizer {
         labelsLayer.selectAll('.var-pointer').remove();
         this.addVariablePointers(labelsLayer, nodeData, variables);
 
+        // Render orphaned nodes
+        this.renderOrphanedNodes(heap, context);
+
         // Update reset button visibility
         this.updateResetButtonVisibility();
+    }
+
+    // Render orphaned nodes (exist in heap but unreachable from global root)
+    renderOrphanedNodes(heap, context) {
+        const orphaned = this.findOrphanedNodes(heap, context);
+        if (!orphaned.length) return;
+
+        let orphanedLayer = this.g.select('.orphaned-layer');
+        if (orphanedLayer.empty()) {
+            orphanedLayer = this.g.append('g').attr('class', 'orphaned-layer');
+        }
+
+        // Clear previous
+        orphanedLayer.selectAll('*').remove();
+
+        // Background box to make orphaned nodes obvious
+        const boxWidth = 200;
+        const headerHeight = 35;
+        const itemHeight = 100;
+        const boxHeight = headerHeight + (itemHeight * orphaned.length) + 10;
+        const boxX = 10;
+        const boxY = this.height - boxHeight - 10;
+
+        orphanedLayer.append('rect')
+            .attr('class', 'orphaned-box')
+            .attr('x', boxX)
+            .attr('y', boxY)
+            .attr('rx', 8)
+            .attr('ry', 8)
+            .attr('width', boxWidth)
+            .attr('height', boxHeight)
+            .attr('fill', '#fff3cd')
+            .attr('stroke', '#ffc107')
+            .attr('stroke-width', 2)
+            .attr('opacity', 0.9);
+
+        orphanedLayer.append('text')
+            .attr('x', boxX + 10)
+            .attr('y', boxY + 20)
+            .attr('fill', '#856404')
+            .attr('font-weight', 'bold')
+            .attr('font-size', '12px')
+            .text('⚠ Orphaned (unreachable from root)');
+
+        orphaned.forEach((item, idx) => {
+            const itemY = boxY + headerHeight + (idx * itemHeight);
+
+            orphanedLayer.append('text')
+                .attr('x', boxX + 10)
+                .attr('y', itemY + 14)
+                .attr('fill', '#856404')
+                .attr('font-size', '11px')
+                .text(`Node ${item.id}:`);
+
+            const baseX = boxX + boxWidth / 2;
+            const baseY = itemY + 40;
+
+            const root = this.layoutTree(item.tree, baseX, baseY, 0);
+            if (!root) return;
+
+            const nodes = this.collectNodes(root);
+            const links = this.collectLinks(root);
+
+            const group = orphanedLayer.append('g').attr('class', 'orphaned-tree');
+
+            group.selectAll('.orphaned-link')
+                .data(links)
+                .enter()
+                .append('line')
+                .attr('class', d => `link orphaned-link ${d.color}`)
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y)
+                .attr('opacity', 0.7);
+
+            const nodeGroups = group.selectAll('.orphaned-node')
+                .data(nodes)
+                .enter()
+                .append('g')
+                .attr('class', 'node orphaned-node')
+                .attr('transform', d => `translate(${d.x}, ${d.y})`);
+
+            nodeGroups.append('circle')
+                .attr('r', this.nodeRadius * 0.7)
+                .attr('opacity', 0.7);
+
+            nodeGroups.append('text')
+                .text(d => d.data.value)
+                .attr('opacity', 0.7);
+        });
     }
 }
