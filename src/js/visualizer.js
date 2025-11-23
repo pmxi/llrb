@@ -132,6 +132,8 @@ class TreeVisualizer {
         // When building orphaned subtrees, stop at nodes that ARE reachable
         // (prevents showing the same node in both main tree and orphaned box)
         const orphaned = [];
+        const heapNodeIds = Object.keys(heap);
+
         for (const [nodeId, node] of Object.entries(heap)) {
             if (!reachable.has(nodeId)) {
                 orphaned.push({
@@ -139,6 +141,17 @@ class TreeVisualizer {
                     tree: this.buildTreeFromHeap(heap, nodeId, reachable)
                 });
             }
+        }
+
+        // Debug logging
+        if (orphaned.length > 0) {
+            console.log('🔍 Orphaned nodes detected:', {
+                globalRootId: context.globalRootId,
+                totalNodesInHeap: heapNodeIds.length,
+                reachableNodes: Array.from(reachable),
+                orphanedNodeIds: orphaned.map(o => o.id),
+                heapSnapshot: heap
+            });
         }
 
         return orphaned;
@@ -426,16 +439,14 @@ class TreeVisualizer {
 
     // Render orphaned nodes (exist in heap but unreachable from global root)
     renderOrphanedNodes(heap, context) {
+        // Clear/remove the orphaned layer first
+        this.g.select('.orphaned-layer').remove();
+
         const orphaned = this.findOrphanedNodes(heap, context);
         if (!orphaned.length) return;
 
-        let orphanedLayer = this.g.select('.orphaned-layer');
-        if (orphanedLayer.empty()) {
-            orphanedLayer = this.g.append('g').attr('class', 'orphaned-layer');
-        }
-
-        // Clear previous
-        orphanedLayer.selectAll('*').remove();
+        // Create fresh orphaned layer
+        const orphanedLayer = this.g.append('g').attr('class', 'orphaned-layer');
 
         // Background box to make orphaned nodes obvious
         const boxWidth = 200;
