@@ -2,7 +2,7 @@
 
 An interactive web-based visualizer for Left-Leaning Red-Black (LLRB) 2-3 trees. This educational tool helps you understand how LLRB trees work by showing step-by-step execution of operations with visual feedback.
 
-**[Live Demo →](https://YOUR_USERNAME.github.io/llrb)** *(Update this link after deployment)*
+**[Live Demo →](https://pmxi.github.io/llrb)**
 
 ## Features
 
@@ -120,5 +120,7 @@ This visualizer implements the Left-Leaning Red-Black tree algorithms by **Rober
 The visual design is inspired by the tree diagrams in Sedgewick's *Algorithms* textbook.
 
 ## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
 
 This project is open source and available for educational use.
