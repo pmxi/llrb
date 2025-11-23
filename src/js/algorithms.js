@@ -19,24 +19,49 @@
  */
 
 const ALGORITHMS = {
+    insertPublic: `public void insert(Key key, Value val)
+{
+    root = insert(root, key, val);
+    root.color = BLACK;
+}`,
+
     insert: `private Node insert(Node h, Key key, Value val)
 {
-    if (h == null) return new Node(key, val, RED);
+    if (h == null)
+        return new Node(key, val, RED);
 
-    if (key < h.key) h.left = insert(h.left, key, val);
-    else if (key > h.key) h.right = insert(h.right, key, val);
-    else h.val = val;
+    if (key < h.key)
+        h.left = insert(h.left, key, val);
+    else if (key > h.key)
+        h.right = insert(h.right, key, val);
+    else
+        h.val = val;
 
-    if (isRed(h.right) && !isRed(h.left)) h = rotateLeft(h);
-    if (isRed(h.left) && isRed(h.left.left)) h = rotateRight(h);
-    if (isRed(h.left) && isRed(h.right)) colorFlip(h);
+    if (isRed(h.right) && !isRed(h.left))
+        h = rotateLeft(h);
+    if (isRed(h.left) && isRed(h.left.left))
+        h = rotateRight(h);
+    if (isRed(h.left) && isRed(h.right))
+        colorFlip(h);
 
     return h;
 }`,
 
+    deleteMinPublic: `public void deleteMin()
+{
+    if (!isRed(root.left) && !isRed(root.right))
+        root.color = RED;
+
+    root = deleteMin(root);
+
+    if (root != null)
+        root.color = BLACK;
+}`,
+
     deleteMin: `private Node deleteMin(Node h)
 {
-    if (h.left == null) return null;
+    if (h.left == null)
+        return null;
 
     if (!isRed(h.left) && !isRed(h.left.left))
         h = moveRedLeft(h);
@@ -44,6 +69,17 @@ const ALGORITHMS = {
     h.left = deleteMin(h.left);
 
     return fixUp(h);
+}`,
+
+    deletePublic: `public void delete(Key key)
+{
+    if (!isRed(root.left) && !isRed(root.right))
+        root.color = RED;
+
+    root = delete(root, key);
+
+    if (root != null)
+        root.color = BLACK;
 }`,
 
     delete: `private Node delete(Node h, Key key)
@@ -68,7 +104,8 @@ const ALGORITHMS = {
             h.key = min(h.right).key;
             h.right = deleteMin(h.right);
         }
-        else h.right = delete(h.right, key);
+        else
+            h.right = delete(h.right, key);
     }
     return fixUp(h);
 }`,
@@ -98,7 +135,8 @@ const ALGORITHMS = {
 
     fixUp: `private Node fixUp(Node h)
 {
-    if (isRed(h.right)) h = rotateLeft(h);
+    if (isRed(h.right))
+        h = rotateLeft(h);
 
     if (isRed(h.left) && isRed(h.left.left))
         h = rotateRight(h);
