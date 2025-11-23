@@ -93,16 +93,19 @@ class TreeVisualizer {
     }
 
     // Build tree structure from heap
-    buildTreeFromHeap(heap, nodeId) {
+    buildTreeFromHeap(heap, nodeId, stopAtNodes = null) {
         if (nodeId === null) return null;
         const node = heap[nodeId];
         if (!node) return null;
 
+        // Stop if we hit a node we should avoid (e.g., already reachable from root)
+        if (stopAtNodes && stopAtNodes.has(nodeId)) return null;
+
         return {
             value: node.value,
             color: node.color,
-            left: this.buildTreeFromHeap(heap, node.left),
-            right: this.buildTreeFromHeap(heap, node.right)
+            left: this.buildTreeFromHeap(heap, node.left, stopAtNodes),
+            right: this.buildTreeFromHeap(heap, node.right, stopAtNodes)
         };
     }
 
@@ -126,12 +129,14 @@ class TreeVisualizer {
         this.markReachable(heap, context.globalRootId, reachable);
 
         // Find all nodes in heap that aren't reachable
+        // When building orphaned subtrees, stop at nodes that ARE reachable
+        // (prevents showing the same node in both main tree and orphaned box)
         const orphaned = [];
         for (const [nodeId, node] of Object.entries(heap)) {
             if (!reachable.has(nodeId)) {
                 orphaned.push({
                     id: nodeId,
-                    tree: this.buildTreeFromHeap(heap, nodeId)
+                    tree: this.buildTreeFromHeap(heap, nodeId, reachable)
                 });
             }
         }
