@@ -1,8 +1,24 @@
-// Left-Leaning Red-Black Tree Implementation with Execution Tracking
+/**
+ * Left-Leaning Red-Black Tree Implementation with Execution Tracking
+ *
+ * This file implements Sedgewick's LLRB tree algorithms with execution tracing.
+ * The key innovation: while the tree operations execute normally, we capture
+ * snapshots at each significant step to enable step-by-step visualization.
+ *
+ * Architecture:
+ * 1. Real tree operations execute and modify the tree structure
+ * 2. ExecutionTracer records each step with line numbers matching algorithms.js
+ * 3. Each step includes: tree snapshot, variables, call stack, detached nodes
+ * 4. Steps array is returned to UI for playback/stepping
+ */
 
 const RED = true;
 const BLACK = false;
 
+/**
+ * Tree node with a value and red/black color.
+ * Nodes are always created red initially (LLRB invariant).
+ */
 class Node {
     constructor(value) {
         this.value = value;
@@ -12,20 +28,66 @@ class Node {
     }
 }
 
+/**
+ * Execution tracer captures step-by-step algorithm execution.
+ *
+ * How it works:
+ * - Before each significant operation, call addStep() with current state
+ * - Line numbers in addStep() correspond to lines in ALGORITHMS (algorithms.js)
+ * - Each step captures: algorithm name, line number, variables, tree snapshot
+ * - The array of steps is returned to UI for visualization
+ *
+ * Example flow for insert(5):
+ *   addStep('insert', 0, {key:5, h:3}, treeSnapshot1)  <- Line 0: function entry
+ *   addStep('insert', 2, {key:5, h:3}, treeSnapshot2)  <- Line 2: null check
+ *   addStep('insert', 4, {key:5, h:3}, treeSnapshot3)  <- Line 4: comparison
+ *   ... more steps as recursion proceeds
+ */
 class ExecutionTracer {
     constructor() {
+        /** @type {Array<ExecutionStep>} Array of captured execution steps */
         this.steps = [];
+        /** @type {Array<{funcName: string, params: Object}>} Current call stack for recursion tracking */
         this.callStack = [];
     }
 
+    /**
+     * Push a function call onto the call stack (entering recursion level)
+     * @param {string} funcName - Name of function being called (e.g., 'insert', 'rotateLeft')
+     * @param {Object} params - Parameters passed to function (e.g., {h: 5, key: 3})
+     */
     pushCall(funcName, params) {
         this.callStack.push({ funcName, params });
     }
 
+    /**
+     * Pop a function call from stack (exiting recursion level)
+     */
     popCall() {
         this.callStack.pop();
     }
 
+    /**
+     * Record an execution step (this is the core of the stepping system!)
+     *
+     * Each step represents one line of the algorithm executing. The lineNumber
+     * parameter must match the line number in ALGORITHMS[funcName] so the UI
+     * can highlight the correct line of pseudocode.
+     *
+     * @param {string} funcName - Algorithm name (must match key in ALGORITHMS)
+     * @param {number} lineNumber - Line number in the algorithm (0-indexed)
+     * @param {Object} variables - Current variable values (e.g., {h: 5, key: 3, x: 2})
+     * @param {Object} treeState - Serialized tree snapshot (from serializeTree())
+     * @param {Array<{label: string, tree: Object}>} floatingNodes - Detached subtrees during rotations
+     *
+     * @typedef {Object} ExecutionStep
+     * @property {string} funcName - Which algorithm is executing
+     * @property {number} lineNumber - Which line (for highlighting in UI)
+     * @property {Array} callStack - Recursion depth/stack trace
+     * @property {Object} variables - Variable values at this moment
+     * @property {Object} treeState - Complete tree structure snapshot
+     * @property {Array} floatingNodes - Temporarily detached subtrees
+     */
     addStep(funcName, lineNumber, variables, treeState, floatingNodes = []) {
         this.steps.push({
             funcName,
@@ -40,25 +102,59 @@ class ExecutionTracer {
         });
     }
 
+    /**
+     * Clear all steps and call stack (called before each new operation)
+     */
     reset() {
         this.steps = [];
         this.callStack = [];
     }
 }
 
+/**
+ * Left-Leaning Red-Black Tree with execution tracing.
+ *
+ * This class implements Sedgewick's LLRB tree algorithms. Each operation
+ * (insert, delete, deleteMin) executes normally but also records execution
+ * steps that can be played back for visualization.
+ *
+ * Key methods return Array<ExecutionStep> for UI visualization.
+ */
 class LLRBTree {
     constructor() {
+        /** @type {Node|null} Root of the tree */
         this.root = null;
+        /** @type {ExecutionTracer} Captures execution steps for visualization */
         this.tracer = new ExecutionTracer();
     }
 
-    // Helper: Check if node is red
+    /**
+     * Check if a node is red (null nodes are considered black)
+     * @param {Node|null} node - Node to check
+     * @returns {boolean} True if node exists and is red
+     */
     isRed(node) {
         if (node === null) return false;
         return node.color === RED;
     }
 
-    // Insert operation
+    /**
+     * Insert a value into the tree and return execution steps.
+     *
+     * This is the public API method. It:
+     * 1. Resets the tracer (clears previous steps)
+     * 2. Calls the recursive insert implementation
+     * 3. Ensures root is black (LLRB invariant)
+     * 4. Returns array of execution steps for UI playback
+     *
+     * @param {number} key - Value to insert
+     * @returns {Array<ExecutionStep>} Execution steps for visualization
+     *
+     * @example
+     * const steps = tree.insert(5);
+     * // Returns: [{funcName:'insert', lineNumber:0, ...}, {funcName:'insert', lineNumber:2, ...}, ...]
+     * // UI can now step through these to show algorithm execution
+     */
     insert(key) {
         this.tracer.reset();
         this.tracer.addStep('insert', -1, { key }, this.serializeTree());

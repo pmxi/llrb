@@ -1,14 +1,59 @@
-// Main Application Controller
-
+/**
+ * Main Application Controller
+ *
+ * This class orchestrates the entire step-by-step algorithm visualization.
+ * It connects three main components:
+ *
+ * 1. LLRBTree (llrb.js) - Executes operations and captures execution steps
+ * 2. PseudocodeDisplay (pseudocode.js) - Shows algorithm code with line highlighting
+ * 3. TreeVisualizer (visualizer.js) - Renders the tree structure with D3.js
+ *
+ * COMPLETE FLOW FOR insert(5):
+ *
+ * User action:
+ *   User types "5" and clicks → button
+ *
+ * handleInsert() executes:
+ *   1. const steps = tree.insert(5)
+ *      → Tree executes real insert operation
+ *      → ExecutionTracer captures ~50 steps
+ *      → Returns [{funcName:'insert', lineNumber:0, treeState:{...}, ...}, ...]
+ *
+ *   2. pseudocode.loadSteps(steps)
+ *      → Loads steps array
+ *      → Renders first step (step 0)
+ *
+ *   3. updateVisualizationAtCurrentStep()
+ *      → Gets current step: steps[0]
+ *      → Updates tree visualization to match step.treeState
+ *      → Shows variable pointers (h, x, etc.)
+ *
+ * User presses → (stepForward):
+ *   1. pseudocode.stepForward()
+ *      → Increments currentStepIndex: 0 → 1
+ *      → Looks up PARSED_ALGORITHMS['insert']
+ *      → Highlights line at steps[1].lineNumber
+ *
+ *   2. updateVisualizationAtCurrentStep()
+ *      → Updates tree to steps[1].treeState
+ *      → Shows steps[1].variables
+ *
+ * This repeats for all ~50 steps, showing the complete algorithm execution.
+ */
 class LLRBApp {
     constructor() {
-        // Initialize components
+        /** @type {LLRBTree} The tree data structure with execution tracing */
         this.tree = new LLRBTree();
+        /** @type {TreeVisualizer} D3.js-based tree visualization */
         this.visualizer = new TreeVisualizer('tree-svg');
+        /** @type {PseudocodeDisplay} Algorithm code display with line highlighting */
         this.pseudocode = new PseudocodeDisplay('pseudocode-display');
+        /** @type {boolean} Whether auto-play is active */
         this.isPlaying = false;
+        /** @type {number|null} Interval ID for auto-play */
         this.playInterval = null;
-        this.playDelay = 650; // ms between auto-steps
+        /** @type {number} Delay between auto-steps in milliseconds */
+        this.playDelay = 650;
 
         // Get UI elements
         this.elements = {

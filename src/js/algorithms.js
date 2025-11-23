@@ -1,4 +1,22 @@
-// Static Algorithm Definitions (Sedgewick's LLRB algorithms)
+/**
+ * Static Algorithm Definitions (Sedgewick's LLRB algorithms)
+ *
+ * These are the "textbook" versions of the algorithms - they're never executed!
+ * They serve as the reference pseudocode that gets displayed in the UI.
+ *
+ * HOW THE STEPPING SYSTEM WORKS:
+ * 1. These algorithms are stored as strings with their original line numbers
+ * 2. The real implementation (llrb.js) calls tracer.addStep(funcName, lineNumber, ...)
+ * 3. The lineNumber must match the line in ALGORITHMS[funcName]
+ * 4. The UI highlights the matching line in pseudocode display
+ *
+ * Example:
+ *   - ALGORITHMS['insert'] contains "if (h == null) return new Node..." at line 2
+ *   - llrb.js calls tracer.addStep('insert', 2, ...) before that check
+ *   - UI highlights line 2 of the insert algorithm when displaying that step
+ *
+ * IMPORTANT: Line numbers in llrb.js must stay synchronized with these algorithms!
+ */
 
 const ALGORITHMS = {
     insert: `private Node insert(Node h, Key key, Value val)
@@ -119,16 +137,40 @@ const ALGORITHMS = {
 }`
 };
 
-// Parse algorithm into lines for highlighting
+/**
+ * Parse algorithm text into structured lines for display.
+ *
+ * Converts a multi-line algorithm string into an array of line objects
+ * that the UI can use for rendering with syntax highlighting and line numbers.
+ *
+ * @param {string} algorithmText - Raw algorithm text (multi-line string)
+ * @returns {Array<{lineNumber: number, text: string, indent: number}>}
+ *
+ * @example
+ * parseAlgorithm("if (h == null)\n  return x;")
+ * // Returns:
+ * // [{lineNumber: 0, text: "if (h == null)", indent: 0},
+ * //  {lineNumber: 1, text: "  return x;", indent: 2}]
+ */
 function parseAlgorithm(algorithmText) {
     return algorithmText.split('\n').map((line, index) => ({
         lineNumber: index,
         text: line,
-        indent: line.search(/\S|$/)
+        indent: line.search(/\S|$/)  // Count leading whitespace
     }));
 }
 
-// Get all parsed algorithms
+/**
+ * Pre-parsed algorithms for fast lookup during rendering.
+ *
+ * The UI (pseudocode.js) looks up PARSED_ALGORITHMS[funcName] to get
+ * the line-by-line breakdown of an algorithm, then highlights the current line.
+ *
+ * @type {Object<string, Array>}
+ * @example
+ * PARSED_ALGORITHMS['insert'][2]
+ * // Returns: {lineNumber: 2, text: "if (h == null)...", indent: 4}
+ */
 const PARSED_ALGORITHMS = {};
 for (const [name, code] of Object.entries(ALGORITHMS)) {
     PARSED_ALGORITHMS[name] = parseAlgorithm(code);

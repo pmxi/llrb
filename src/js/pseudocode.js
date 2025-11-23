@@ -1,14 +1,42 @@
-// Pseudocode Display with Static Algorithm Code
-
+/**
+ * Pseudocode Display with Static Algorithm Code
+ *
+ * This class displays the static algorithm code (from ALGORITHMS in algorithms.js)
+ * and highlights the currently executing line based on execution steps.
+ *
+ * HOW IT WORKS:
+ * 1. Receives array of execution steps from llrb.js (via app.js)
+ * 2. Each step contains: {funcName, lineNumber, variables, treeState, ...}
+ * 3. Looks up PARSED_ALGORITHMS[funcName] to get the algorithm text
+ * 4. Highlights line at currentStep.lineNumber
+ * 5. Shows call stack, variables, and step counter alongside code
+ *
+ * User can step forward/backward through steps to see algorithm execution.
+ */
 class PseudocodeDisplay {
     constructor(containerId) {
+        /** @type {HTMLElement} Container element for rendering */
         this.container = document.getElementById(containerId);
+        /** @type {Array<ExecutionStep>} All execution steps from an operation */
         this.steps = [];
+        /** @type {number} Current step being displayed (0-indexed) */
         this.currentStepIndex = 0;
+        /** @type {string|null} Name of currently displayed algorithm */
         this.currentAlgorithm = null;
     }
 
-    // Load execution steps
+    /**
+     * Load execution steps from a tree operation.
+     *
+     * Called after insert/delete/deleteMin executes. The steps array
+     * contains the complete execution trace.
+     *
+     * @param {Array<ExecutionStep>} steps - Execution trace from llrb.js
+     *
+     * @example
+     * const steps = tree.insert(5);  // Returns array of execution steps
+     * pseudocode.loadSteps(steps);   // Display first step
+     */
     loadSteps(steps) {
         this.steps = steps;
         this.currentStepIndex = 0;
@@ -18,14 +46,20 @@ class PseudocodeDisplay {
         this.render();
     }
 
-    // Navigate to specific step
+    /**
+     * Jump to a specific step (for slider/scrubbing)
+     * @param {number} index - Step index to jump to
+     */
     goToStep(index) {
         if (index < 0 || index >= this.steps.length) return;
         this.currentStepIndex = index;
         this.render();
     }
 
-    // Step forward
+    /**
+     * Move to next step (→ arrow key or Forward button)
+     * @returns {boolean} True if stepped forward, false if at end
+     */
     stepForward() {
         if (this.currentStepIndex < this.steps.length - 1) {
             this.currentStepIndex++;
@@ -35,7 +69,10 @@ class PseudocodeDisplay {
         return false;
     }
 
-    // Step backward
+    /**
+     * Move to previous step (← arrow key or Back button)
+     * @returns {boolean} True if stepped backward, false if at start
+     */
     stepBackward() {
         if (this.currentStepIndex > 0) {
             this.currentStepIndex--;
@@ -45,7 +82,10 @@ class PseudocodeDisplay {
         return false;
     }
 
-    // Get current step
+    /**
+     * Get the currently displayed execution step
+     * @returns {ExecutionStep} Current step object
+     */
     getCurrentStep() {
         return this.steps[this.currentStepIndex];
     }
