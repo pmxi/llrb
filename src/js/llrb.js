@@ -176,14 +176,20 @@ class LLRBTree {
         if (key < h.value) {
             // Line 6: h.left = insert(h.left, key, val);
             this.captureStep(funcName, 6, { h: hId, key });
-            h.left = this.insertRecursive(h.left, key);
+            const newLeftId = this.insertRecursive(h.left, key);
+            // Re-fetch to get latest version (might have been modified during recursion)
+            h = this.heap.get(hId);
+            h.left = newLeftId;
             this.heap.set(hId, h);
         } else if (key > h.value) {
             // Line 7: else if (key > h.key)
             this.captureStep(funcName, 7, { h: hId, key });
             // Line 8: h.right = insert(h.right, key, val);
             this.captureStep(funcName, 8, { h: hId, key });
-            h.right = this.insertRecursive(h.right, key);
+            const newRightId = this.insertRecursive(h.right, key);
+            // Re-fetch to get latest version (might have been modified during recursion)
+            h = this.heap.get(hId);
+            h.right = newRightId;
             this.heap.set(hId, h);
         } else {
             // Line 9: else
@@ -306,8 +312,11 @@ class LLRBTree {
 
         // Line 8: h.left = deleteMin(h.left);
         this.captureStep(funcName, 8, { h: currentHId });
-        const updatedH = this.heap.get(currentHId);
-        updatedH.left = this.deleteMinRecursive(updatedH.left);
+        let updatedH = this.heap.get(currentHId);
+        const newLeftId = this.deleteMinRecursive(updatedH.left);
+        // Re-fetch to avoid stale data
+        updatedH = this.heap.get(currentHId);
+        updatedH.left = newLeftId;
         this.heap.set(currentHId, updatedH);
 
         // Line 10: return fixUp(h);
@@ -385,7 +394,10 @@ class LLRBTree {
             }
             this.captureStep(funcName, 6, { h: currentHId });
             h = this.heap.get(currentHId);
-            h.left = this.deleteRecursive(h.left, key);
+            const newLeftId = this.deleteRecursive(h.left, key);
+            // Re-fetch to avoid stale data
+            h = this.heap.get(currentHId);
+            h.left = newLeftId;
             this.heap.set(currentHId, h);
         } else {
             // Line 10: if (isRed(h.left))
@@ -432,13 +444,19 @@ class LLRBTree {
                 this.heap.set(currentHId, h);
                 this.captureStep(funcName, 20, { h: currentHId });
                 h = this.heap.get(currentHId);
-                h.right = this.deleteMinRecursive(h.right);
+                const newRightId1 = this.deleteMinRecursive(h.right);
+                // Re-fetch to avoid stale data
+                h = this.heap.get(currentHId);
+                h.right = newRightId1;
                 this.heap.set(currentHId, h);
             } else {
                 // Line 23: h.right = delete(h.right, key);
                 this.captureStep(funcName, 23, { h: currentHId });
                 h = this.heap.get(currentHId);
-                h.right = this.deleteRecursive(h.right, key);
+                const newRightId2 = this.deleteRecursive(h.right, key);
+                // Re-fetch to avoid stale data
+                h = this.heap.get(currentHId);
+                h.right = newRightId2;
                 this.heap.set(currentHId, h);
             }
         }
