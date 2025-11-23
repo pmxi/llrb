@@ -10,9 +10,9 @@ An interactive web-based visualizer for Left-Leaning Red-Black (LLRB) 2-3 trees.
 - **Step-by-Step Algorithm Display**: Watch each operation execute line by line
 - **Animation Controls**: Play, pause, and step through operations at your own pace
 - **Three Core Operations**:
-  - Insert: Add values to the tree
-  - Delete: Remove specific values
-  - Delete Min: Remove the minimum value
+  - Insert: Add keys to the tree
+  - Delete: Remove specific keys
+  - Delete Min: Remove the minimum keys
 
 ## Quick Start
 
