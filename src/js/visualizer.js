@@ -146,7 +146,7 @@ class TreeVisualizer {
     }
 
     // Visualize the tree
-    visualize(treeData, variables = {}) {
+    visualize(treeData, variables = {}, floatingNodes = []) {
         // Clear previous visualization
         this.g.selectAll('*').remove();
 
@@ -158,6 +158,7 @@ class TreeVisualizer {
                   .attr('fill', '#999')
                   .attr('font-style', 'italic')
                   .text('Tree is empty');
+            this.renderFloatingNodes(floatingNodes);
             this.updateResetButtonVisibility();
             return;
         }
@@ -217,6 +218,9 @@ class TreeVisualizer {
         // Add variable pointers
         this.addVariablePointers(labelsGroup, nodes, variables);
 
+        // Detached nodes (e.g., rotate temporaries)
+        this.renderFloatingNodes(floatingNodes);
+
         // Update reset button visibility
         this.updateResetButtonVisibility();
     }
@@ -258,9 +262,9 @@ class TreeVisualizer {
     }
 
     // Update visualization with animation
-    update(treeData, duration = 300, variables = {}) {
+    update(treeData, duration = 300, variables = {}, floatingNodes = []) {
         if (!treeData) {
-            this.visualize(null, variables);
+            this.visualize(null, variables, floatingNodes);
             return;
         }
 
@@ -355,8 +359,79 @@ class TreeVisualizer {
         // Clear old pointers and add new ones
         labelsLayer.selectAll('.var-pointer').remove();
         this.addVariablePointers(labelsLayer, nodeData, variables);
+        this.renderFloatingNodes(floatingNodes);
 
         // Update reset button visibility
         this.updateResetButtonVisibility();
+    }
+
+    renderFloatingNodes(floatingNodes = []) {
+        let floatingLayer = this.g.select('.floating-layer');
+        if (floatingLayer.empty()) {
+            floatingLayer = this.g.append('g').attr('class', 'floating-layer');
+        }
+
+        // Clear previous
+        floatingLayer.selectAll('*').remove();
+
+        if (!floatingNodes.length) return;
+
+        // Background box to make detached nodes obvious
+        const boxWidth = 180;
+        const boxHeight = 110 * floatingNodes.length + 16;
+        const boxX = this.width - boxWidth - 12;
+        const boxY = 10;
+
+        floatingLayer.append('rect')
+            .attr('class', 'floating-box')
+            .attr('x', boxX)
+            .attr('y', boxY)
+            .attr('rx', 8)
+            .attr('ry', 8)
+            .attr('width', boxWidth)
+            .attr('height', boxHeight);
+
+        floatingLayer.append('text')
+            .attr('class', 'floating-label')
+            .attr('x', boxX + 12)
+            .attr('y', boxY + 18)
+            .text('Detached during rotate');
+
+        floatingNodes.forEach((item, idx) => {
+            const baseX = boxX + boxWidth / 2;
+            const baseY = boxY + 36 + idx * 110;
+
+            floatingLayer.append('text')
+                .attr('class', 'floating-label')
+                .attr('x', boxX + 12)
+                .attr('y', baseY - 18)
+                .text(`${item.label} (detached)`);
+
+            const root = this.layoutTree(item.tree, baseX, baseY, 0);
+            const nodes = this.collectNodes(root);
+            const links = this.collectLinks(root);
+
+            const group = floatingLayer.append('g').attr('class', 'floating-tree');
+
+            group.selectAll('.floating-link')
+                .data(links)
+                .enter()
+                .append('line')
+                .attr('class', d => `link floating-link ${d.color}`)
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+
+            const nodeGroups = group.selectAll('.floating-node')
+                .data(nodes)
+                .enter()
+                .append('g')
+                .attr('class', 'node floating-node')
+                .attr('transform', d => `translate(${d.x}, ${d.y})`);
+
+            nodeGroups.append('circle').attr('r', this.nodeRadius * 0.7);
+            nodeGroups.append('text').text(d => d.data.value);
+        });
     }
 }

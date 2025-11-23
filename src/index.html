@@ -75,10 +75,22 @@
             <div class="control-group">
                 <h3>Operations</h3>
                 <div class="operation-controls">
-                    <input type="number" id="value-input" placeholder="Enter value" />
-                    <button id="insert-btn">Insert</button>
-                    <button id="delete-btn">Delete</button>
-                    <button id="delete-min-btn">Delete Min</button>
+                    <div class="operation-row">
+                        <span class="op-name">insert(</span>
+                        <input type="number" id="insert-input" class="op-input" placeholder="value" />
+                        <span class="op-name">)</span>
+                        <button id="insert-go-btn" class="go-btn">→</button>
+                    </div>
+                    <div class="operation-row">
+                        <span class="op-name">delete(</span>
+                        <input type="number" id="delete-input" class="op-input" placeholder="value" />
+                        <span class="op-name">)</span>
+                        <button id="delete-go-btn" class="go-btn">→</button>
+                    </div>
+                    <div class="operation-row">
+                        <span class="op-name">deleteMin()</span>
+                        <button id="delete-min-go-btn" class="go-btn">→</button>
+                    </div>
                     <button id="clear-btn">Clear Tree</button>
                 </div>
             </div>

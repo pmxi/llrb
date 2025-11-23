@@ -12,10 +12,11 @@ class LLRBApp {
 
         // Get UI elements
         this.elements = {
-            valueInput: document.getElementById('value-input'),
-            insertBtn: document.getElementById('insert-btn'),
-            deleteBtn: document.getElementById('delete-btn'),
-            deleteMinBtn: document.getElementById('delete-min-btn'),
+            insertInput: document.getElementById('insert-input'),
+            insertGoBtn: document.getElementById('insert-go-btn'),
+            deleteInput: document.getElementById('delete-input'),
+            deleteGoBtn: document.getElementById('delete-go-btn'),
+            deleteMinGoBtn: document.getElementById('delete-min-go-btn'),
             clearBtn: document.getElementById('clear-btn'),
             resetViewBtn: document.getElementById('reset-view-btn'),
             stepStartBtn: document.getElementById('step-start-btn'),
@@ -37,9 +38,9 @@ class LLRBApp {
 
     setupEventListeners() {
         // Operation buttons
-        this.elements.insertBtn.addEventListener('click', () => this.handleInsert());
-        this.elements.deleteBtn.addEventListener('click', () => this.handleDelete());
-        this.elements.deleteMinBtn.addEventListener('click', () => this.handleDeleteMin());
+        this.elements.insertGoBtn.addEventListener('click', () => this.handleInsert());
+        this.elements.deleteGoBtn.addEventListener('click', () => this.handleDelete());
+        this.elements.deleteMinGoBtn.addEventListener('click', () => this.handleDeleteMin());
         this.elements.clearBtn.addEventListener('click', () => this.handleClear());
         this.elements.resetViewBtn.addEventListener('click', () => this.visualizer.resetView());
 
@@ -68,10 +69,16 @@ class LLRBApp {
             }
         });
 
-        // Enter key on input
-        this.elements.valueInput.addEventListener('keypress', (e) => {
+        // Enter key on inputs
+        this.elements.insertInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 this.handleInsert();
+            }
+        });
+
+        this.elements.deleteInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.handleDelete();
             }
         });
     }
@@ -151,7 +158,7 @@ class LLRBApp {
 
     // Handle insert operation
     handleInsert() {
-        const value = parseInt(this.elements.valueInput.value);
+        const value = parseInt(this.elements.insertInput.value);
         if (isNaN(value)) {
             this.showStatus('Please enter a valid number', 'error');
             return;
@@ -160,7 +167,7 @@ class LLRBApp {
         const steps = this.tree.insert(value);
         this.pseudocode.loadSteps(steps);
         this.configureStepperForSteps();
-        this.elements.valueInput.value = '';
+        this.elements.insertInput.value = '';
         this.showStatus(`Inserted ${value} - Scrub the slider, use arrows, or hit Play to step through.`, 'success');
         this.updateUI();
         this.afterStepChanged();
@@ -168,7 +175,7 @@ class LLRBApp {
 
     // Handle delete operation
     handleDelete() {
-        const value = parseInt(this.elements.valueInput.value);
+        const value = parseInt(this.elements.deleteInput.value);
         if (isNaN(value)) {
             this.showStatus('Please enter a valid number to delete', 'error');
             return;
@@ -177,7 +184,7 @@ class LLRBApp {
         const steps = this.tree.delete(value);
         this.pseudocode.loadSteps(steps);
         this.configureStepperForSteps();
-        this.elements.valueInput.value = '';
+        this.elements.deleteInput.value = '';
         this.showStatus(`Deleted ${value} - Scrub the slider, use arrows, or hit Play to step through.`, 'success');
         this.updateUI();
         this.afterStepChanged();

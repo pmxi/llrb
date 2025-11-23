@@ -305,7 +305,55 @@ header p {
 .operation-controls {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
+}
+
+.operation-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.op-name {
+    font-family: 'Courier New', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.op-input {
+    width: 80px;
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 14px;
+    font-family: 'Courier New', monospace;
+    background-color: #ffffff;
+    color: #1a1a1a;
+    text-align: center;
+}
+
+.op-input:focus {
+    outline: none;
+    border-color: #1a1a1a;
+}
+
+.op-input::placeholder {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+    font-size: 12px;
+    font-style: italic;
+}
+
+.go-btn {
+    padding: 6px 14px;
+    font-size: 18px;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    margin-left: 6px;
+}
+
+.go-btn:hover:not(:disabled) {
+    background-color: #333;
 }
 
 input[type="number"] {
@@ -463,6 +511,17 @@ input[type="range"]::-moz-range-thumb {
 .link.red {
     stroke: #d00000;
     /* Sedgewick's exact color: rgb(175, 61, 39) */
+}
+
+.floating-label {
+    font-size: 11px;
+    fill: #666;
+}
+
+.floating-box {
+    fill: rgba(240, 240, 240, 0.9);
+    stroke: #dcdcdc;
+    stroke-width: 1.5px;
 }
 
 /* About Section */
