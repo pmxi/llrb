@@ -31,6 +31,10 @@ header h1 {
     color: #1a1a1a;
 }
 
+header h1 .red-text {
+    color: #d00000;
+}
+
 header p {
     font-size: 14px;
     color: #666;
