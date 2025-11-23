@@ -161,9 +161,10 @@ class LLRBApp {
         this.pseudocode.loadSteps(steps);
         this.configureStepperForSteps();
         this.elements.valueInput.value = '';
-        this.showStatus(`Inserted ${value} - Scrub the slider, use arrows, or hit Play to step through.`, 'success');
+        this.showStatus(`Inserted ${value} - Playing back execution (Space to pause, ←/→ to step)`, 'success');
         this.updateUI();
         this.afterStepChanged();
+        this.startPlayback();
     }
 
     // Handle delete operation
@@ -178,9 +179,10 @@ class LLRBApp {
         this.pseudocode.loadSteps(steps);
         this.configureStepperForSteps();
         this.elements.valueInput.value = '';
-        this.showStatus(`Deleted ${value} - Scrub the slider, use arrows, or hit Play to step through.`, 'success');
+        this.showStatus(`Deleted ${value} - Playing back execution (Space to pause, ←/→ to step)`, 'success');
         this.updateUI();
         this.afterStepChanged();
+        this.startPlayback();
     }
 
     // Handle delete minimum operation
@@ -188,9 +190,10 @@ class LLRBApp {
         const steps = this.tree.deleteMin();
         this.pseudocode.loadSteps(steps);
         this.configureStepperForSteps();
-        this.showStatus('Deleted minimum - Scrub the slider, use arrows, or hit Play to step through.', 'success');
+        this.showStatus('Deleted minimum - Playing back execution (Space to pause, ←/→ to step)', 'success');
         this.updateUI();
         this.afterStepChanged();
+        this.startPlayback();
     }
 
     // Handle clear tree
@@ -208,7 +211,7 @@ class LLRBApp {
     updateVisualizationAtCurrentStep() {
         const step = this.pseudocode.getCurrentStep();
         if (step && step.treeState) {
-            this.visualizer.update(step.treeState, 250, step.variables || {});
+            this.visualizer.update(step.treeState, 250, step.variables || {}, step.floatingNodes || []);
         }
     }
 
