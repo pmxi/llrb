@@ -249,7 +249,7 @@ class LLRBApp {
     handleClear() {
         this.tree.clear();
         this.pseudocode.clear();
-        this.visualizer.visualize(null);
+        this.visualizer.visualize({}, { globalRootId: null, stack: [] });
         this.stopPlayback();
         this.resetStepper();
         this.showStatus('Tree cleared', 'success');
@@ -259,8 +259,8 @@ class LLRBApp {
     // Update visualization at current step
     updateVisualizationAtCurrentStep() {
         const step = this.pseudocode.getCurrentStep();
-        if (step && step.treeState) {
-            this.visualizer.update(step.treeState, 250, step.variables || {}, step.floatingNodes || []);
+        if (step && step.heap) {
+            this.visualizer.update(step.heap, step.context, 250, step.variables || {});
         }
     }
 

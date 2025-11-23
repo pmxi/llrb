@@ -92,6 +92,20 @@ class TreeVisualizer {
         return `M${source.x},${source.y} L${target.x},${target.y}`;
     }
 
+    // Build tree structure from heap
+    buildTreeFromHeap(heap, nodeId) {
+        if (nodeId === null) return null;
+        const node = heap[nodeId];
+        if (!node) return null;
+
+        return {
+            value: node.value,
+            color: node.color,
+            left: this.buildTreeFromHeap(heap, node.left),
+            right: this.buildTreeFromHeap(heap, node.right)
+        };
+    }
+
     // Custom layout that respects left/right positioning
     layoutTree(data, x = this.width / 2, y = 0, level = 0) {
         if (!data) return null;
@@ -146,9 +160,12 @@ class TreeVisualizer {
     }
 
     // Visualize the tree
-    visualize(treeData, variables = {}, floatingNodes = []) {
+    visualize(heap, context, variables = {}) {
         // Clear previous visualization
         this.g.selectAll('*').remove();
+
+        // Build tree from heap
+        const treeData = this.buildTreeFromHeap(heap, context?.globalRootId);
 
         if (!treeData) {
             // Empty tree - show message
@@ -158,7 +175,6 @@ class TreeVisualizer {
                   .attr('fill', '#999')
                   .attr('font-style', 'italic')
                   .text('Tree is empty');
-            this.renderFloatingNodes(floatingNodes);
             this.updateResetButtonVisibility();
             return;
         }
@@ -218,9 +234,6 @@ class TreeVisualizer {
         // Add variable pointers
         this.addVariablePointers(labelsGroup, nodes, variables);
 
-        // Detached nodes (e.g., rotate temporaries)
-        this.renderFloatingNodes(floatingNodes);
-
         // Update reset button visibility
         this.updateResetButtonVisibility();
     }
@@ -262,9 +275,12 @@ class TreeVisualizer {
     }
 
     // Update visualization with animation
-    update(treeData, duration = 300, variables = {}, floatingNodes = []) {
+    update(heap, context, duration = 300, variables = {}) {
+        // Build tree from heap
+        const treeData = this.buildTreeFromHeap(heap, context?.globalRootId);
+
         if (!treeData) {
-            this.visualize(null, variables, floatingNodes);
+            this.visualize(heap, context, variables);
             return;
         }
 
@@ -359,7 +375,6 @@ class TreeVisualizer {
         // Clear old pointers and add new ones
         labelsLayer.selectAll('.var-pointer').remove();
         this.addVariablePointers(labelsLayer, nodeData, variables);
-        this.renderFloatingNodes(floatingNodes);
 
         // Update reset button visibility
         this.updateResetButtonVisibility();
