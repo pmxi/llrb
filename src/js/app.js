@@ -277,7 +277,11 @@ class LLRBApp {
         this.stopPlayback();
         const total = this.pseudocode.steps.length;
         this.elements.stepSlider.max = Math.max(1, total);
-        this.elements.stepSlider.value = 1;
+        // Jump to the last step so user sees the result immediately
+        // They can step backward to review how the algorithm worked
+        const lastIndex = Math.max(0, total - 1);
+        this.pseudocode.goToStep(lastIndex);
+        this.elements.stepSlider.value = total;
         this.updateStepSlider();
         this.updateStepButtons();
         this.updateStepSummary();
